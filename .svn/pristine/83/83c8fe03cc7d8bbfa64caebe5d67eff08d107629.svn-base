@@ -1,0 +1,17 @@
+
+date.month=1
+date.quarter=2
+query.project=1
+query.user=2
+
+jobType_ceshi=2
+
+pubid=bizwork
+APIToken=e61a4232183c372ff12d609b6ddb9b89
+sendURL=https://puboa.sogou-inc.com/moa/sylla/mapi/pns/send
+
+
+cert.cdn.appid=100200003
+cert.cdn.retry.times=3
+cert.cdn.is.private=true
+

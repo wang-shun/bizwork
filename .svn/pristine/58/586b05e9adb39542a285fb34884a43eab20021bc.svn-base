@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:teleport="http://teleport.sogou.com/schema/teleport"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-2.5.xsd 
+		http://teleport.sogou.com/schema/teleport 
+		http://teleport.sogou.com/schema/teleport/teleport.xsd ">
+
+	
+	<!-- bizwork-task-api soa -->
+	
+	<bean id="achievementTService"
+		class="com.sogou.bizdev.teleport.consumer.factorybean.thrift.ThriftHttpClusterProxyFactoryBean">
+		<property name="appId" value="bizwork-task" />
+		<property name="serviceInterface"
+			value="com.sogou.bizwork.task.api.achievement.service.AchievementTService$Iface" />
+		<property name="timeout" value="20000" />
+		<property name="loadBalance" value="roundrobin" />
+		<property name="failTolerance" value="failover" />
+		<property name="retry" value="3" />
+		<property name="checkTime" value="30" />
+	</bean>
+	
+</beans>
+

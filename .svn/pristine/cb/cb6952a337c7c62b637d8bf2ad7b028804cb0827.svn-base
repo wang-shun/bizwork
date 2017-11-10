@@ -1,0 +1,3 @@
+jdbcUrl=jdbc:mysql://10.144.77.145:3308/bizwork?useUnicode=true&characterEncoding=UTF8&zeroDateTimeBehavior=convertToNull
+username=bizwork
+password=QAZwsxEDC

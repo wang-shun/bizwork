@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sogou.bizwork.dao.modules.UucMapper">
+ 
+
+  <select id="getGroupSituation" resultType="com.sogou.bizwork.bo.modules.GroupSituation">
+    SELECT  * FROM group_project_total WHERE groupid = #{groupid,jdbcType=VARCHAR} and startdate =#{startDateStr,jdbcType=VARCHAR} and enddate =#{endDateStr,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="getPersonalSituation" resultType="com.sogou.bizwork.bo.modules.PersonalSituation">
+    SELECT  * FROM personal_project_total WHERE employee_id = #{employee_id,jdbcType=VARCHAR} and startdate =#{startDateStr,jdbcType=VARCHAR} and enddate =#{endDateStr,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="getPersonalTotallineSituationByGroupId" resultType="com.sogou.bizwork.bo.modules.PersonalTotallineSituation">
+    SELECT  * FROM username_totalline WHERE groupid = #{groupid,jdbcType=VARCHAR} and startdate =#{startDateStr,jdbcType=VARCHAR} and enddate =#{endDateStr,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="getPersonalTotallineSituationByUserId" resultType="com.sogou.bizwork.bo.modules.PersonalTotallineSituation">
+    SELECT  * FROM username_totalline WHERE employee_id = #{employee_id,jdbcType=VARCHAR} and startdate =#{startDateStr,jdbcType=VARCHAR} and enddate =#{endDateStr,jdbcType=VARCHAR}
+  </select>
+  
+  <insert id="saveToGroupProjectTotalline" parameterType="com.sogou.bizwork.bo.modules.GroupSituation" useGeneratedKeys="true" keyProperty="id">
+    insert into group_project_total (totalline,groupid,projectname,startdate,enddate) values(#{totalline},#{groupid},#{projectname},#{startdate},#{enddate})
+  </insert>
+  
+  <insert id="saveToPersonalProjectTotalline" parameterType="com.sogou.bizwork.bo.modules.PersonalSituation" useGeneratedKeys="true" keyProperty="id">
+    insert into personal_project_total (totalline,employee_id,projectname,startdate,enddate) values(#{totalline},#{employee_id},#{projectname},#{startdate},#{enddate})
+  </insert>
+  
+  <insert id="saveUserDateToPersonaltable" parameterType="com.sogou.bizwork.bo.modules.PersonalTotallineSituation" useGeneratedKeys="true" keyProperty="id">
+    insert into username_totalline (totalline,employee_id,chinesename,groupid,startdate,enddate) values(#{totalline},#{employee_id},#{chinesename},#{groupid},#{startdate},#{enddate})
+  </insert>
+  
+</mapper>

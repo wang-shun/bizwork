@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>bizwork</artifactId>
+		<groupId>com.sogou.bizwork</groupId>
+		<version>1.0.7-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	
+	
+	<artifactId>cas-tools</artifactId>
+	<version>${bizwork-web.version}</version>
+	<packaging>jar</packaging>
+
+	<name>cas-tools</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>net.sf.json-lib</groupId>
+			<artifactId>json-lib</artifactId>
+			<classifier>jdk15</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.mail</groupId>
+					<artifactId>mail</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.jms</groupId>
+					<artifactId>jms</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.jdmk</groupId>
+					<artifactId>jmxtools</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.jmx</groupId>
+					<artifactId>jmxri</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>oro</groupId>
+					<artifactId>oro</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.aop</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.aspects</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.beans</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.context</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.instrument.tomcat</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.instrument</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.jms</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.orm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.transaction</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.web.servlet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.web</artifactId>
+        </dependency>
+        <!--  dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.asm</artifactId>
+        </dependency -->
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.context.support</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.expression</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.oxm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.web.portlet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>spring3</groupId>
+            <artifactId>org.springframework.ldap</artifactId>
+        </dependency>
+	   
+	   	<dependency>
+		     <groupId>inspektr</groupId>
+			 <artifactId>inspektr-audit</artifactId>
+		</dependency>
+		
+		<dependency>
+		  <groupId>inspektr</groupId>
+  		  <artifactId>inspektr-common</artifactId>
+		</dependency>
+		<dependency>
+		  <groupId>org.slf4j</groupId>
+  		  <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.terracotta</groupId>
+          <artifactId>quartz-all</artifactId>
+        </dependency>
+        
+        <dependency>
+			<groupId>cas</groupId>
+			<artifactId>cas-server-core</artifactId>
+	   </dependency>
+        
+	</dependencies>
+</project>

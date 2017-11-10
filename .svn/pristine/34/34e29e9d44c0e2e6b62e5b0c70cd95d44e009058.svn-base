@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+
+    <bean id="ldapTemplate" class="org.springframework.ldap.core.LdapTemplate">
+        <constructor-arg ref="contextSource" />
+    </bean>
+
+    <bean id="contextSource"
+        class="org.springframework.ldap.core.support.LdapContextSource">
+        <property name="url" value="ldap://ldap.sogou-inc.com" />
+        <property name="base" value="ou=user,ou=sogou,dc=sogou-inc,dc=com" />
+        <property name="referral" value="follow"></property>
+        <property name="authenticationSource" ref="sogouAuthenticationSource" />
+    </bean>
+
+    <bean id="sogouAuthenticationSource"
+        class="org.springframework.ldap.authentication.DefaultValuesAuthenticationSourceDecorator">
+        <property name="target" ref="bizworkSecurityAuthenticationSource" />
+        <property name="defaultUser" value="bizpms@sogou-inc.com" />
+        <property name="defaultPassword" value="11111111" />
+    </bean>
+
+    <bean id="bizworkSecurityAuthenticationSource"
+        class="com.sogou.bizwork.cas.authentication.BizworkSecurityAuthenticationSource" />
+
+</beans>

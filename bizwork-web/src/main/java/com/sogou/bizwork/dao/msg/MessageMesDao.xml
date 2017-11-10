@@ -1,0 +1,587 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sogou.bizwork.dao.msg.MessageMesDao">
+    <update id="abandonMessage" parameterType="Long">
+        UPDATE message_mes SET if_recall=3
+            WHERE mes_id=#{mesId}
+        ;
+    </update>
+  
+  <resultMap id="ComplexMsg" type="com.sogou.bizwork.bo.msg.ComplexMessage">
+    <id column="mes_id" jdbcType="BIGINT" property="mesId"/>
+    <result column="mes_type_id" jdbcType="BIGINT" property="mesTypeId" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="url" jdbcType="VARCHAR" property="url" />
+    <result column="parent_mes_type_id" jdbcType="VARCHAR" property="parentMesTypeId" />
+    <result column="parent_mes_type_name" jdbcType="VARCHAR" property="parentMesTypeName" />
+  </resultMap>
+  <select id="getComplexMessages" resultMap="ComplexMsg" parameterType="Integer">
+    SELECT m.mes_id, m.mes_type_id, m.title, m.url,
+        mt.parent_mes_type_id,pmt.mes_type_name parent_mes_type_name
+        FROM message_mes m
+        JOIN message_type mt ON m.mes_type_id=mt.mes_type_id
+        JOIN message_receiver mr ON mr.mes_id = m.mes_id
+        JOIN message_type pmt ON mt.parent_mes_type_id = pmt.mes_type_id
+        LEFT JOIN message_type_subscribe mts ON mts.mes_type_id=m.mes_type_id AND mts.employee_id=mr.employee_id
+    WHERE mr.employee_id=#{employeeId} AND mr.`status`=0 AND m.if_recall=0 
+        AND mt.type=1  AND m.platform=3 AND (mts.if_subscribe IS NULL OR mts.if_subscribe = 0)
+       AND UNIX_TIMESTAMP(m.start_date) <![CDATA[   <=  ]]> UNIX_TIMESTAMP(now()) AND
+      UNIX_TIMESTAMP(date_add(m.end_date,INTERVAL 1 day)) <![CDATA[  >=  ]]> UNIX_TIMESTAMP(now());
+  </select>
+  
+  <resultMap id="BriefMsg" type="com.sogou.bizwork.bo.msg.BriefMessage">
+    <result column="num" jdbcType="INTEGER" property="num" />
+    <result column="url" jdbcType="INTEGER" property="url" />
+    <result column="mes_type_id" jdbcType="TINYINT" property="mesTypeId" />
+    <result column="mes_type_name" jdbcType="VARCHAR" property="mesTypeName"/>
+    <result column="parent_mes_type_id" jdbcType="TINYINT" property="parentMesTypeId" />
+    <result column="parent_mes_type_name" jdbcType="VARCHAR" property="parentMesTypeName" />
+  </resultMap>
+  <select id="getBriefMessages" resultMap="BriefMsg" parameterType="Integer" >
+    SELECT if(mb.num IS NULL, 0, mb.num) num,
+    mt.mes_type_id, mt.mes_type_name, mt.url,
+    pmt.mes_type_name parent_mes_type_name
+    ,mt.parent_mes_type_id
+    FROM message_type mt
+    JOIN message_type pmt ON pmt.mes_type_id=mt.parent_mes_type_id
+    LEFT JOIN message_brief mb ON mb.mes_type_id=mt.mes_type_id
+        AND mb.employee_id=#{employeeId}
+    LEFT JOIN message_type_subscribe mts ON mts.employee_id=#{employeeId}
+        AND mts.mes_type_id=mt.parent_mes_type_id
+    WHERE pmt.parent_mes_type_id=0
+        AND (mts.if_subscribe IS NULL OR mts.if_subscribe=0)
+    ;
+  </select>
+    
+  <resultMap id="ScrollMsg" type="com.sogou.bizwork.bo.msg.ScrollMessageDto">
+    <id column="mes_id" jdbcType="BIGINT" property="mesId" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="url" jdbcType="VARCHAR" property="url" />
+  </resultMap>
+  <select id="getScrollMessages" resultMap="ScrollMsg" parameterType="Integer">
+    SELECT m.mes_id, m.title, m.url FROM message_mes m
+        JOIN message_receiver mr ON mr.mes_id=m.mes_id
+        LEFT JOIN message_type_subscribe mts ON mts.mes_type_id=m.mes_type_id
+            AND mts.employee_id=mr.employee_id
+    WHERE platform=1 AND mr.employee_id=#{employeeId}
+                AND m.if_recall=0
+                AND (mts.if_subscribe IS NULL OR mts.if_subscribe=0)
+        AND UNIX_TIMESTAMP(m.start_date) <![CDATA[ <= ]]> UNIX_TIMESTAMP(now())
+        AND UNIX_TIMESTAMP(NOW()) <![CDATA[  < ]]> 
+            UNIX_TIMESTAMP(DATE_SUB(m.end_date,INTERVAL -1 day))
+    ;
+  </select>
+    
+  <resultMap id="DeptActivity" type="com.sogou.bizwork.bo.msg.DepartmentActivityDto">
+    <result column="title" jdbcType="BIGINT" property="title" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+    <result column="pic" jdbcType="VARCHAR" property="pic" />
+  </resultMap>
+  <select id="getDepartmentActivities" resultMap="DeptActivity" parameterType="Integer">
+    SELECT m.title, m.content, m.pic FROM message_mes m
+        JOIN message_receiver mr ON mr.mes_id=m.mes_id
+        LEFT JOIN message_type_subscribe mts ON mts.mes_type_id=m.mes_type_id
+            AND mts.employee_id=mr.employee_id
+    WHERE platform=2 AND mr.employee_id=#{employeeId}
+                AND m.if_recall=0
+                AND (mts.if_subscribe IS NULL OR mts.if_subscribe=0)
+    ;
+  </select>
+  
+  <update id="setMessageToReadByComplexMesId" parameterType="com.sogou.bizwork.bo.msg.MsgReceiverPojo">
+    UPDATE message_receiver mr SET `status`=1
+        WHERE mr.employee_id=#{employeeId} AND mr.mes_id=#{mesId};
+  </update>
+  
+  <resultMap id="BriefSystemMsg" type="com.sogou.bizwork.bo.msg.BriefSystemMessage">
+    <result column="mes_type_name" jdbcType="VARCHAR" property="mesTypeName"/>
+    <result column="sub_mes_type_name" jdbcType="VARCHAR" property="subMesTypeName" />
+    <result column="url" jdbcType="VARCHAR" property="url" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+  <select id="getBriefSystemMessages" resultMap="BriefSystemMsg" parameterType="com.sogou.bizwork.bo.msg.SysMsgDto">
+    SELECT pmt.mes_type_name, mt.url,
+        mt.mes_type_name sub_mes_type_name, mb.create_time,
+            if(mts.if_subscribe = 1, 1, 0) if_subscribe
+        FROM message_type mt
+        JOIN message_type pmt ON pmt.mes_type_id=mt.parent_mes_type_id
+        JOIN message_brief mb ON mb.mes_type_id=mt.mes_type_id
+                LEFT JOIN message_type_subscribe mts ON mts.mes_type_id=mt.parent_mes_type_id
+                    AND mts.employee_id=mb.employee_id
+    WHERE mt.parent_mes_type_id=#{mesTypeId} AND mb.employee_id=#{employeeId}
+                    AND mts.if_subscribe != 1
+        ORDER BY create_time DESC
+        ;
+  </select>
+  
+  
+  <resultMap id="ComplexSystemMsg" type="com.sogou.bizwork.bo.msg.ComplexSystemMessage">
+    <id column="mes_id" jdbcType="BIGINT" property="mesId" />
+    <result column="mes_type_name" jdbcType="VARCHAR" property="mesTypeName" />
+    <result column="platform" jdbcType="TINYINT" property="platform" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="url" jdbcType="VARCHAR" property="url" />
+    <result column="start_date" jdbcType="DATE" property="startDate" />
+    <result column="end_date" jdbcType="DATE" property="endDate" />
+    <result column="if_recall" jdbcType="TINYINT" property="ifRecall" />
+    <result column="create_id" jdbcType="INTEGER" property="createId" />
+    <result column="create_time" jdbcType="DATE" property="createTime" />
+  </resultMap>
+  <select id="getComplexSystemMessages" resultMap="ComplexSystemMsg" parameterType="com.sogou.bizwork.bo.msg.SysMsgDto">
+SELECT * FROM (
+        SELECT mes_id, mt.mes_type_name,m.platform, m.title,
+            m.url, m.start_date, m.end_date, m.if_recall, m.create_time,
+            m.create_id
+         FROM message_mes m
+        JOIN message_type mt ON mt.mes_type_id=m.mes_type_id
+        WHERE m.create_id=#{employeeId}
+        <if test="mesTypeId != 0">
+            AND mt.parent_mes_type_id=#{mesTypeId}
+        </if>
+        AND m.if_recall != 3
+        <if test="startDate != null">
+            AND UNIX_TIMESTAMP(#{startDate}) <![CDATA[ <= ]]> UNIX_TIMESTAMP(IFNULL(m.start_date,NOW()))
+        </if>
+        <if test="endDate != null">
+            AND UNIX_TIMESTAMP(IFNULL(m.end_date,NOW()))  <![CDATA[ <= ]]>  UNIX_TIMESTAMP(#{endDate})
+        </if>
+        
+
+<if test="onlyMySend == false">
+    UNION ALL
+
+        SELECT m.mes_id, mt.mes_type_name,m.platform, m.title,
+            m.url, m.start_date, m.end_date, m.if_recall, m.create_time,
+            m.create_id
+        FROM message_mes m
+        JOIN message_type mt ON mt.mes_type_id=m.mes_type_id
+        JOIN message_receiver mr ON mr.mes_id=m.mes_id
+        WHERE mr.employee_id=#{employeeId} AND m.create_id != #{employeeId}
+        <if test="mesTypeId != 0">
+            AND mt.parent_mes_type_id=#{mesTypeId}
+        </if>
+        AND m.if_recall = 0
+        <if test="startDate != null">
+            AND UNIX_TIMESTAMP(#{startDate}) <![CDATA[ <= ]]> UNIX_TIMESTAMP(IFNULL(m.start_date,NOW()))
+        </if>
+        <if test="endDate != null">
+            AND UNIX_TIMESTAMP(IFNULL(m.end_date,NOW()))  <![CDATA[ <= ]]>  UNIX_TIMESTAMP(#{endDate})
+        </if>
+</if>
+) x
+ORDER BY x.mes_id DESC
+LIMIT #{firstOne}, #{pageSize}
+;
+  </select>
+  <select id="getSystemMessageAmount" parameterType="com.sogou.bizwork.bo.msg.SysMsgDto" resultType="java.lang.Integer">
+SELECT SUM(c)  FROM (
+(
+        SELECT count(*) c
+         FROM message_mes m
+        JOIN message_type mt ON mt.mes_type_id=m.mes_type_id
+        WHERE m.create_id=#{employeeId}
+        <if test="mesTypeId != 0">
+            AND mt.parent_mes_type_id=#{mesTypeId}
+        </if>
+        AND m.if_recall != 3
+        <if test="startDate != null">
+            AND UNIX_TIMESTAMP(#{startDate}) <![CDATA[ <= ]]> UNIX_TIMESTAMP(IFNULL(m.start_date,NOW()))
+        </if>
+        <if test="endDate != null">
+            AND UNIX_TIMESTAMP(IFNULL(m.end_date,NOW()))  <![CDATA[ <= ]]>  UNIX_TIMESTAMP(#{endDate})
+        </if>
+)
+<if test="onlyMySend == false">
+    UNION ALL
+    (
+        SELECT count(*) c
+        FROM message_mes m
+        JOIN message_type mt ON mt.mes_type_id=m.mes_type_id
+        JOIN message_receiver mr ON mr.mes_id=m.mes_id
+        WHERE mr.employee_id=#{employeeId} AND m.create_id != #{employeeId}
+        <if test="mesTypeId != 0">
+            AND mt.parent_mes_type_id=#{mesTypeId}
+        </if>
+        AND m.if_recall = 0
+        <if test="startDate != null">
+            AND UNIX_TIMESTAMP(#{startDate}) <![CDATA[ <= ]]> UNIX_TIMESTAMP(m.start_date)
+        </if>
+        <if test="endDate != null">
+            AND UNIX_TIMESTAMP(m.end_date)  <![CDATA[ <= ]]>  UNIX_TIMESTAMP(#{endDate})
+        </if>
+    ) 
+</if>
+) x
+;
+  </select>
+  
+  
+  <resultMap id="MsgDetail" type="com.sogou.bizwork.bo.msg.MessageDetail">
+    <id column="mes_id" jdbcType="BIGINT" property="mesId" />
+    <result column="mes_type_name" jdbcType="VARCHAR" property="mesType" />
+    <result column="mes_type_id" jdbcType="INTEGER" property="mesTypeId" />
+    <result column="platform" jdbcType="TINYINT" property="platform" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+    <result column="url" jdbcType="VARCHAR" property="url" />
+    <result column="pic" jdbcType="VARCHAR" property="pic" />
+    <result column="receivers" jdbcType="VARCHAR" property="receivers" />
+    <result column="start_date" jdbcType="DATE" property="startDate" />
+    <result column="end_date" jdbcType="DATE" property="endDate" />
+  </resultMap>
+  <select id="getMessageDetail" resultMap="MsgDetail" parameterType="java.lang.Long">
+    SELECT m.mes_id,mt.mes_type_name,mt.mes_type_id,
+        m.platform, m.title, m.content,
+        m.url, m.pic, m.receivers, m.start_date,
+        m.end_date
+    FROM message_mes m
+        JOIN message_type mt ON mt.mes_type_id=m.mes_type_id
+    WHERE m.mes_id=#{employeeId};
+    ;
+  </select>
+  
+  <insert id="addSystemMessage" parameterType="com.sogou.bizwork.bo.msg.SystemMessageDto"
+    useGeneratedKeys="true" keyProperty="mesId" >
+    INSERT INTO message_mes (mes_type_id, title,
+    content, url, pic, start_date, end_date, platform,
+    create_id, receivers) 
+    VALUES (#{mesTypeId},#{title}, #{content},
+    #{url}, #{pic}, #{startDate}, #{endDate},
+     #{platform}, #{createId}, #{receivers});
+  </insert>
+
+  <resultMap id="BaseResultMap" type="com.sogou.bizwork.bo.msg.MessageMes">
+    <id column="mes_id" jdbcType="BIGINT" property="mesId" />
+    <result column="mes_type_id" jdbcType="BIGINT" property="mesTypeId" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+    <result column="url" jdbcType="VARCHAR" property="url" />
+    <result column="pic" jdbcType="VARCHAR" property="pic" />
+    <result column="start_date" jdbcType="DATE" property="startDate" />
+    <result column="end_date" jdbcType="DATE" property="endDate" />
+    <result column="platform" jdbcType="TINYINT" property="platForm" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="create_id" jdbcType="BIGINT" property="createId" />
+    <result column="if_recall" jdbcType="TINYINT" property="ifRecall" />
+    <result column="receivers" jdbcType="VARCHAR" property="receivers" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    mes_id, mes_type_id, title, content, url, pic, start_date, end_date, platform, create_time, 
+    create_id, if_recall, receivers
+  </sql>
+  <select id="selectByExample" parameterType="com.sogou.bizwork.bo.msg.MessageMesExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from message_mes
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from message_mes
+    where mes_id = #{mesId,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from message_mes
+    where mes_id = #{mesId,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.sogou.bizwork.bo.msg.MessageMesExample">
+    delete from message_mes
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.sogou.bizwork.bo.msg.MessageMes">
+    insert into message_mes (mes_id, mes_type_id, title, 
+      content, url, pic, 
+      start_date, end_date, platform, 
+      create_time, create_id, if_recall, 
+      receivers)
+    values (#{mesId,jdbcType=BIGINT}, #{mesTypeId,jdbcType=BIGINT}, #{title,jdbcType=VARCHAR}, 
+      #{content,jdbcType=VARCHAR}, #{url,jdbcType=VARCHAR}, #{pic,jdbcType=VARCHAR}, 
+      #{startDate,jdbcType=DATE}, #{endDate,jdbcType=DATE}, #{platForm,jdbcType=TINYINT}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{createId,jdbcType=BIGINT}, #{ifRecall,jdbcType=TINYINT}, 
+      #{receivers,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.sogou.bizwork.bo.msg.MessageMes">
+    insert into message_mes
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="mesId != null">
+        mes_id,
+      </if>
+      <if test="mesTypeId != null">
+        mes_type_id,
+      </if>
+      <if test="title != null">
+        title,
+      </if>
+      <if test="content != null">
+        content,
+      </if>
+      <if test="url != null">
+        url,
+      </if>
+      <if test="pic != null">
+        pic,
+      </if>
+      <if test="startDate != null">
+        start_date,
+      </if>
+      <if test="endDate != null">
+        end_date,
+      </if>
+      <if test="platForm != null">
+        platform,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="createId != null">
+        create_id,
+      </if>
+      <if test="ifRecall != null">
+        if_recall,
+      </if>
+      <if test="receivers != null">
+        receivers,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="mesId != null">
+        #{mesId,jdbcType=BIGINT},
+      </if>
+      <if test="mesTypeId != null">
+        #{mesTypeId,jdbcType=BIGINT},
+      </if>
+      <if test="title != null">
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="content != null">
+        #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="url != null">
+        #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="pic != null">
+        #{pic,jdbcType=VARCHAR},
+      </if>
+      <if test="startDate != null">
+        #{startDate,jdbcType=DATE},
+      </if>
+      <if test="endDate != null">
+        #{endDate,jdbcType=DATE},
+      </if>
+      <if test="platForm != null">
+        #{platForm,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createId != null">
+        #{createId,jdbcType=BIGINT},
+      </if>
+      <if test="ifRecall != null">
+        #{ifRecall,jdbcType=TINYINT},
+      </if>
+      <if test="receivers != null">
+        #{receivers,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.sogou.bizwork.bo.msg.MessageMesExample" resultType="java.lang.Long">
+    select count(*) from message_mes
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update message_mes
+    <set>
+      <if test="record.mesId != null">
+        mes_id = #{record.mesId,jdbcType=BIGINT},
+      </if>
+      <if test="record.mesTypeId != null">
+        mes_type_id = #{record.mesTypeId,jdbcType=BIGINT},
+      </if>
+      <if test="record.title != null">
+        title = #{record.title,jdbcType=VARCHAR},
+      </if>
+      <if test="record.content != null">
+        content = #{record.content,jdbcType=VARCHAR},
+      </if>
+      <if test="record.url != null">
+        url = #{record.url,jdbcType=VARCHAR},
+      </if>
+      <if test="record.pic != null">
+        pic = #{record.pic,jdbcType=VARCHAR},
+      </if>
+      <if test="record.startDate != null">
+        start_date = #{record.startDate,jdbcType=DATE},
+      </if>
+      <if test="record.endDate != null">
+        end_date = #{record.endDate,jdbcType=DATE},
+      </if>
+      <if test="record.platForm != null">
+        platform = #{record.platForm,jdbcType=TINYINT},
+      </if>
+      <if test="record.createTime != null">
+        create_time = #{record.createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.createId != null">
+        create_id = #{record.createId,jdbcType=BIGINT},
+      </if>
+      <if test="record.ifRecall != null">
+        if_recall = #{record.ifRecall,jdbcType=TINYINT},
+      </if>
+      <if test="record.receivers != null">
+        receivers = #{record.receivers,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update message_mes
+    set mes_id = #{record.mesId,jdbcType=BIGINT},
+      mes_type_id = #{record.mesTypeId,jdbcType=BIGINT},
+      title = #{record.title,jdbcType=VARCHAR},
+      content = #{record.content,jdbcType=VARCHAR},
+      url = #{record.url,jdbcType=VARCHAR},
+      pic = #{record.pic,jdbcType=VARCHAR},
+      start_date = #{record.startDate,jdbcType=DATE},
+      end_date = #{record.endDate,jdbcType=DATE},
+      platform = #{record.platForm,jdbcType=TINYINT},
+      create_time = #{record.createTime,jdbcType=TIMESTAMP},
+      create_id = #{record.createId,jdbcType=BIGINT},
+      if_recall = #{record.ifRecall,jdbcType=TINYINT},
+      receivers = #{record.receivers,jdbcType=VARCHAR}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.sogou.bizwork.bo.msg.MessageMes">
+    update message_mes
+    <set>
+      <if test="mesTypeId != null">
+        mes_type_id = #{mesTypeId,jdbcType=BIGINT},
+      </if>
+      <if test="title != null">
+        title = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="content != null">
+        content = #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="url != null">
+        url = #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="pic != null">
+        pic = #{pic,jdbcType=VARCHAR},
+      </if>
+      <if test="startDate != null">
+        start_date = #{startDate,jdbcType=DATE},
+      </if>
+      <if test="endDate != null">
+        end_date = #{endDate,jdbcType=DATE},
+      </if>
+      <if test="platForm != null">
+        platform = #{platForm,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createId != null">
+        create_id = #{createId,jdbcType=BIGINT},
+      </if>
+      <if test="ifRecall != null">
+        if_recall = #{ifRecall,jdbcType=TINYINT},
+      </if>
+      <if test="receivers != null">
+        receivers = #{receivers,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where mes_id = #{mesId,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.sogou.bizwork.bo.msg.MessageMes">
+    update message_mes
+    set mes_type_id = #{mesTypeId,jdbcType=BIGINT},
+      title = #{title,jdbcType=VARCHAR},
+      content = #{content,jdbcType=VARCHAR},
+      url = #{url,jdbcType=VARCHAR},
+      pic = #{pic,jdbcType=VARCHAR},
+      start_date = #{startDate,jdbcType=DATE},
+      end_date = #{endDate,jdbcType=DATE},
+      platform = #{platForm,jdbcType=TINYINT},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      create_id = #{createId,jdbcType=BIGINT},
+      if_recall = #{ifRecall,jdbcType=TINYINT},
+      receivers = #{receivers,jdbcType=VARCHAR}
+    where mes_id = #{mesId,jdbcType=BIGINT}
+  </update>
+</mapper>

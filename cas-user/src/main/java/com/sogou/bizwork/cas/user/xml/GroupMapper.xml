@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sogou.bizwork.cas.user.dao.GroupMapper">
+
+  <select id="getEmployeeIdsByGroupId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        SELECT distinct employee_id from `user`
+        WHERE groupid=#{groupId};
+    </select>
+    
+  <select id="getEmployeeIdsByIds" parameterType="java.util.List" resultType="java.lang.Integer">
+        SELECT DISTINCT employee_id FROM `user` where id in
+            <foreach collection="list" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+  </select>
+  
+  <select id="getEmployeeIdsByGroupIds" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        SELECT DISTINCT employee_id FROM `user`
+        WHERE groupid in
+           (
+            SELECT DISTINCT id FROM grouptable g WHERE
+                <foreach collection="list" item="groupId" separator="or">
+                    g.groupauth LIKE CONCAT('%#',#{groupId},'#%') 
+                </foreach>
+            )
+  </select>
+  
+  <resultMap id="RecPojo" type="com.sogou.bizwork.cas.user.model.ReceiverDto">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="groupname" jdbcType="VARCHAR" property="name" />
+    <result column="type" jdbcType="BIGINT" property="type" />
+  </resultMap>
+  <select id="getGroupsByIds" parameterType="java.lang.Integer" resultMap="RecPojo">
+      SELECT id, groupname, 1 type
+        FROM grouptable
+      WHERE id in 
+        <foreach collection="list" item="groupid" open="(" separator="," close=")">
+        #{groupid}
+        </foreach>
+     ;
+    </select>
+    
+    
+  <resultMap id="RecPojo2" type="com.sogou.bizwork.cas.user.model.ReceiverDto">
+    <id column="employee_id" jdbcType="BIGINT" property="id" />
+    <result column="chinesename" jdbcType="VARCHAR" property="name" />
+    <result column="type" jdbcType="BIGINT" property="type" />
+  </resultMap>
+  <select id="getUsersByIds" parameterType="java.lang.Integer" resultMap="RecPojo2">
+    SELECT employee_id,chinesename, 0 type
+        FROM `user`
+    WHERE employee_id in 
+        <foreach collection="list" item="employeeId" open="(" separator="," close=")">
+            #{employeeId}
+        </foreach>
+    ;
+  </select>
+  
+  <resultMap id="BaseResultMap" type="com.sogou.bizwork.cas.user.model.Group">
+    <id column="Id" jdbcType="BIGINT" property="id" />
+    <result column="groupname" jdbcType="VARCHAR" property="groupName" />
+    <result column="chinesename" jdbcType="VARCHAR" property="chineseName" />
+    <result column="parentgroupid" jdbcType="BIGINT" property="parentGroupId" />
+    <result column="parentgroup" jdbcType="BIGINT" property="parentGroup" />
+    <result column="leader" jdbcType="VARCHAR" property="leader" />
+    <result column="leaderemail" jdbcType="VARCHAR" property="leaderEmail" />
+    <result column="groupemail" jdbcType="VARCHAR" property="groupEmail" />
+    <result column="groupfunction" jdbcType="BIGINT" property="groupFunction" />
+    <result column="grouptype" jdbcType="BIGINT" property="groupType" />
+    <result column="groupstate" jdbcType="BIGINT" property="groupeState" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    Id, groupname, chinesename, parentgroupid, parentgroup, leader, leaderemail, groupemail, 
+    groupfunction, grouptype, groupstate
+  </sql>
+  <select id="selectByExample" parameterType="com.sogou.bizwork.cas.user.model.GroupExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from grouptable
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from grouptable
+    where Id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from grouptable
+    where Id = #{id,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.sogou.bizwork.cas.user.model.GroupExample">
+    delete from grouptable
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.sogou.bizwork.cas.user.model.Group">
+    insert into grouptable (Id, groupname, chinesename, 
+      parentgroupid, parentgroup, leader, 
+      leaderemail, groupemail, groupfunction, 
+      grouptype, groupstate)
+    values (#{id,jdbcType=BIGINT}, #{groupName,jdbcType=VARCHAR}, #{chineseName,jdbcType=VARCHAR}, 
+      #{parentGroupId,jdbcType=BIGINT}, #{parentGroup,jdbcType=BIGINT}, #{leader,jdbcType=VARCHAR}, 
+      #{leaderEmail,jdbcType=VARCHAR}, #{groupEmail,jdbcType=VARCHAR}, #{groupFunction,jdbcType=BIGINT}, 
+      #{groupType,jdbcType=BIGINT}, #{groupeState,jdbcType=BIGINT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.sogou.bizwork.cas.user.model.Group">
+    insert into grouptable
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        Id,
+      </if>
+      <if test="groupName != null">
+        groupname,
+      </if>
+      <if test="chineseName != null">
+        chinesename,
+      </if>
+      <if test="parentGroupId != null">
+        parentgroupid,
+      </if>
+      <if test="parentGroup != null">
+        parentgroup,
+      </if>
+      <if test="leader != null">
+        leader,
+      </if>
+      <if test="leaderEmail != null">
+        leaderemail,
+      </if>
+      <if test="groupEmail != null">
+        groupemail,
+      </if>
+      <if test="groupFunction != null">
+        groupfunction,
+      </if>
+      <if test="groupType != null">
+        grouptype,
+      </if>
+      <if test="groupeState != null">
+        groupstate,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="groupName != null">
+        #{groupName,jdbcType=VARCHAR},
+      </if>
+      <if test="chineseName != null">
+        #{chineseName,jdbcType=VARCHAR},
+      </if>
+      <if test="parentGroupId != null">
+        #{parentGroupId,jdbcType=BIGINT},
+      </if>
+      <if test="parentGroup != null">
+        #{parentGroup,jdbcType=BIGINT},
+      </if>
+      <if test="leader != null">
+        #{leader,jdbcType=VARCHAR},
+      </if>
+      <if test="leaderEmail != null">
+        #{leaderEmail,jdbcType=VARCHAR},
+      </if>
+      <if test="groupEmail != null">
+        #{groupEmail,jdbcType=VARCHAR},
+      </if>
+      <if test="groupFunction != null">
+        #{groupFunction,jdbcType=BIGINT},
+      </if>
+      <if test="groupType != null">
+        #{groupType,jdbcType=BIGINT},
+      </if>
+      <if test="groupeState != null">
+        #{groupeState,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.sogou.bizwork.cas.user.model.GroupExample" resultType="java.lang.Long">
+    select count(*) from grouptable
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update grouptable
+    <set>
+      <if test="record.id != null">
+        Id = #{record.id,jdbcType=BIGINT},
+      </if>
+      <if test="record.groupName != null">
+        groupname = #{record.groupName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.chineseName != null">
+        chinesename = #{record.chineseName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.parentGroupId != null">
+        parentgroupid = #{record.parentGroupId,jdbcType=BIGINT},
+      </if>
+      <if test="record.parentGroup != null">
+        parentgroup = #{record.parentGroup,jdbcType=BIGINT},
+      </if>
+      <if test="record.leader != null">
+        leader = #{record.leader,jdbcType=VARCHAR},
+      </if>
+      <if test="record.leaderEmail != null">
+        leaderemail = #{record.leaderEmail,jdbcType=VARCHAR},
+      </if>
+      <if test="record.groupEmail != null">
+        groupemail = #{record.groupEmail,jdbcType=VARCHAR},
+      </if>
+      <if test="record.groupFunction != null">
+        groupfunction = #{record.groupFunction,jdbcType=BIGINT},
+      </if>
+      <if test="record.groupType != null">
+        grouptype = #{record.groupType,jdbcType=BIGINT},
+      </if>
+      <if test="record.groupeState != null">
+        groupstate = #{record.groupeState,jdbcType=BIGINT},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update grouptable
+    set Id = #{record.id,jdbcType=BIGINT},
+      groupname = #{record.groupName,jdbcType=VARCHAR},
+      chinesename = #{record.chineseName,jdbcType=VARCHAR},
+      parentgroupid = #{record.parentGroupId,jdbcType=BIGINT},
+      parentgroup = #{record.parentGroup,jdbcType=BIGINT},
+      leader = #{record.leader,jdbcType=VARCHAR},
+      leaderemail = #{record.leaderEmail,jdbcType=VARCHAR},
+      groupemail = #{record.groupEmail,jdbcType=VARCHAR},
+      groupfunction = #{record.groupFunction,jdbcType=BIGINT},
+      grouptype = #{record.groupType,jdbcType=BIGINT},
+      groupstate = #{record.groupeState,jdbcType=BIGINT}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.sogou.bizwork.cas.user.model.Group">
+    update grouptable
+    <set>
+      <if test="groupName != null">
+        groupname = #{groupName,jdbcType=VARCHAR},
+      </if>
+      <if test="chineseName != null">
+        chinesename = #{chineseName,jdbcType=VARCHAR},
+      </if>
+      <if test="parentGroupId != null">
+        parentgroupid = #{parentGroupId,jdbcType=BIGINT},
+      </if>
+      <if test="parentGroup != null">
+        parentgroup = #{parentGroup,jdbcType=BIGINT},
+      </if>
+      <if test="leader != null">
+        leader = #{leader,jdbcType=VARCHAR},
+      </if>
+      <if test="leaderEmail != null">
+        leaderemail = #{leaderEmail,jdbcType=VARCHAR},
+      </if>
+      <if test="groupEmail != null">
+        groupemail = #{groupEmail,jdbcType=VARCHAR},
+      </if>
+      <if test="groupFunction != null">
+        groupfunction = #{groupFunction,jdbcType=BIGINT},
+      </if>
+      <if test="groupType != null">
+        grouptype = #{groupType,jdbcType=BIGINT},
+      </if>
+      <if test="groupeState != null">
+        groupstate = #{groupeState,jdbcType=BIGINT},
+      </if>
+    </set>
+    where Id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.sogou.bizwork.cas.user.model.Group">
+    update grouptable
+    set groupname = #{groupName,jdbcType=VARCHAR},
+      chinesename = #{chineseName,jdbcType=VARCHAR},
+      parentgroupid = #{parentGroupId,jdbcType=BIGINT},
+      parentgroup = #{parentGroup,jdbcType=BIGINT},
+      leader = #{leader,jdbcType=VARCHAR},
+      leaderemail = #{leaderEmail,jdbcType=VARCHAR},
+      groupemail = #{groupEmail,jdbcType=VARCHAR},
+      groupfunction = #{groupFunction,jdbcType=BIGINT},
+      grouptype = #{groupType,jdbcType=BIGINT},
+      groupstate = #{groupeState,jdbcType=BIGINT}
+    where Id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

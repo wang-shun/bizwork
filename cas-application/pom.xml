@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>bizwork</artifactId>
+		<groupId>com.sogou.bizwork</groupId>
+		<version>1.0.7-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	
+	<artifactId>cas-application</artifactId>
+	<version>${bizwork-web.version}</version>
+	<packaging>jar</packaging>
+
+	<name>cas-application</name>
+ 
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.sogou.bizwork</groupId>
+			<artifactId>cas-tools</artifactId>
+		</dependency>
+        <dependency>
+            <groupId>mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+        </dependency>
+		
+		<dependency>
+				<groupId>sogou.sogou-dubhe.dubhe-common</groupId>
+				<artifactId>dubhe-cache</artifactId>
+				<exclusions>
+					<exclusion>
+						<artifactId>slf4j-jcl</artifactId>
+						<groupId>org.slf4j</groupId>
+					</exclusion>
+				</exclusions>
+		</dependency>
+		
+	    <dependency>
+				<groupId>cas</groupId>
+				<artifactId>cas-server-core</artifactId>
+	   </dependency>
+		
+	</dependencies>
+</project>

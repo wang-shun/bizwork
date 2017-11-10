@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>bizwork</artifactId>
+		<groupId>com.sogou.bizwork</groupId>
+		<version>1.0.7-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<artifactId>cas-server</artifactId>
+	<version>${bizwork-web.version}</version>
+	<packaging>jar</packaging>
+
+	<name>cas-server</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.sogou.bizwork</groupId>
+			<artifactId>cas-tools</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.sogou.bizwork</groupId>
+			<artifactId>cas-application</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.sogou.bizwork</groupId>
+			<artifactId>cas-user</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>org.perf4j</groupId>
+  			<artifactId>perf4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.spy</groupId>
+			<artifactId>spymemcached</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>cas</groupId>
+			<artifactId>cas-server-core</artifactId>
+	   </dependency>
+	   
+	   	<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-annotations</artifactId>
+        </dependency>
+		
+		
+	</dependencies>
+</project>

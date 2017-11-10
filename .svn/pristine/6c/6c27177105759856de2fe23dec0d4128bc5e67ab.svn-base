@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+
+	<!-- Cache Registry -->
+	<bean id="cacheRegistry" class="com.sogou.bizdev.dubhe.cache.CacheRegistry"></bean>
+
+	<!-- Cache using application object as key, such as Object, Object[] -->
+	<bean id="defaultCache" class="com.sogou.bizdev.dubhe.cache.CacheImpl">
+		<property name="cache" ref="internalMemcacheWrapper">
+		</property>
+	</bean>
+
+	<bean id="localCache" class="com.sogou.bizdev.dubhe.cache.CacheImpl">
+		<property name="cache" ref="internalMemoryCache">
+		</property>
+	</bean>
+	
+	<!-- Managed cache (use java.lang.String as its key) -->
+	<bean id="internalMemoryCache" class="com.sogou.bizdev.dubhe.cache.impl.InternalMemoryCache">
+	</bean>
+	
+	<bean id="internalMemcacheWrapper" class="com.sogou.bizdev.dubhe.cache.ManageableInternalCacheWrapper">
+		<property name="cache" ref="internalMemcache">
+		</property>
+	</bean>
+	
+	<!-- Un-managed cache -->
+	<bean id="internalMemcache" class="com.sogou.bizdev.dubhe.cache.impl.InternalMemcacheCache" destroy-method="shutdown">
+		<property name="prefix"><value>${memcache.prefix}</value></property>
+		<property name="initConnections"><value>${memcache.init_connection}</value></property>
+		<property name="minConnections"><value>${memcache.min_connection}</value></property>
+		<property name="maxConnections"><value>${memcache.max_connection}</value></property>
+		<property name="maxIdleTime"><value>${memcache.max_idle_time}</value></property>
+		<property name="maintSleepTime"><value>${memcache.maint_sleep_time}</value></property>
+		<property name="socketReadTimeOut"><value>${memcache.socket_read_timeout}</value></property>
+		<property name="socketConnectTimeOut"><value>${memcache.socket_connect_timeout}</value></property>
+		<property name="socketNagle"><value>${memcache.socket_nagle}</value></property>
+		<property name="failover"><value>${memcache.failover}</value></property>
+		<property name="failback"><value>${memcache.failback}</value></property>
+		<property name="primitiveAsString"><value>${memcache.primitive_as_string}</value></property>
+		<property name="hosts"><value>${memcache.hosts}</value></property>
+		<property name="weights"><value>${memcache.weights}</value></property>
+	</bean>
+	   
+	<!-- Cache Interceptor -->
+	<bean id="cacheInterceptor" class="com.sogou.bizdev.dubhe.cache.intercepter.CacheIntercepter">
+		<property name="cacheRegistry" ref="cacheRegistry"></property>		
+	</bean>
+	
+	<bean id="cacheFlushInterceptor" class="com.sogou.bizdev.dubhe.cache.intercepter.CacheFlushIntercepter">
+		<property name="cacheRegistry" ref="cacheRegistry"></property>		
+	</bean>
+	
+	<bean id="cacheEvictInterceptor" class="com.sogou.bizdev.dubhe.cache.intercepter.CacheEvictIntercepter">
+		<property name="cacheRegistry" ref="cacheRegistry"></property>		
+	</bean>
+	
+	<bean class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+		<property name="beanNames">
+			<list>
+			    <value>bizworkApplicationService</value>
+				<value>appAttributeService</value>
+				<value>attributeService</value>
+				<value>bizworkAuthorizationApplicationService</value>
+				<value>bizworkAuthorizationUserService</value>
+			</list>
+		</property>
+		<property name="interceptorNames">
+			<list>
+				<value>cacheInterceptor</value>
+				<value>cacheFlushInterceptor</value>
+				<value>cacheEvictInterceptor</value>
+			</list>
+		</property>
+	</bean>	
+	
+	<!-- Cache Management -->
+	<bean id="cacheManagement" class="com.sogou.bizdev.dubhe.cache.management.CacheManagement">
+		<property name="cacheRegistry" ref="cacheRegistry"></property>	
+	</bean>
+</beans>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+	<!-- 事务管理拦截器 -->
+	<bean id="uucTransactionInterceptor"
+		class="org.springframework.transaction.interceptor.TransactionInterceptor">
+		<property name="transactionManager" ref="uucTransactionManager" />
+		<property name="transactionAttributes">
+			<props>
+				<!-- 写事务,join外层事务 -->
+				<prop key="create*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="build*">PROPAGATION_REQUIRED,-Exception</prop>
+
+				<prop key="delete*">PROPAGATION_REQUIRED,-Exception</prop>
+
+				<prop key="set*">PROPAGATION_REQUIRED,-Exception</prop>
+				<prop key="update*">PROPAGATION_REQUIRED,-Exception</prop>
+				<!-- 只读事务 -->
+				<prop key="*">PROPAGATION_REQUIRED,readOnly</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- 配置拦截器 -->
+	<bean
+		class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+		<property name="beanNames">
+			<list>
+				<value>bizworkApplicationService</value>
+				<value>attributeService</value>
+				<value>applicationService</value>
+				<value>appAttributeService</value>
+				<value>serviceRegistry</value>
+			</list>
+		</property>
+		<property name="interceptorNames">
+			<!--注意拦截器的顺序很重要,数据源的拦截器必须在事务管理拦截器之前 -->
+			<list>
+			    <value>myUUCDataSourceInterceptor</value>
+				<!-- 事务管理的Interceptor -->
+				<value>uucTransactionInterceptor</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- 创建SqlSessionFactory，同时指定数据源 -->
+	<bean id="uucSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="uucDataSource" />
+		<property name="mapperLocations" value="classpath*:com/**/xml/**/*Mapper.xml" />
+	</bean>
+
+
+	<bean id="uucTransactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="uucDataSource" />
+	</bean>
+
+</beans>

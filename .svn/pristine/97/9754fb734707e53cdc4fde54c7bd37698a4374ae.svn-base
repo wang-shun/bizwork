@@ -1,0 +1,37 @@
+#####################log4j.properties#####################
+system.logPath=/opt/logs/bizwork
+
+##### Global Log Level(FATAL,Error,WARN,INFO,DEBUG) #############
+log4j.rootLogger=INFO,ERR,CONSOLE,ACCESS
+
+##### console Logger #############
+log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender
+log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout
+log4j.appender.CONSOLE.layout.ConversionPattern=[%d] [%c:%L] %-5p - %m%n
+log4j.appender.CONSOLE.encoding=UTF-8
+
+log4j.appender.ACCESS=org.apache.log4j.DailyRollingFileAppender
+log4j.appender.ACCESS.file=${system.logPath}/access/access.log
+log4j.appender.ACCESS.encoding=UTF-8
+log4j.appender.ACCESS.DatePattern='.'yyyy-MM-dd
+log4j.appender.ACCESS.layout=org.apache.log4j.PatternLayout
+log4j.appender.ACCESS.layout.ConversionPattern=[%d] [%c:%L] %-5p - %m%n
+
+##### Error Logger #############
+log4j.appender.ERR=org.apache.log4j.DailyRollingFileAppender
+log4j.appender.ERR.File=/opt/logs/monitor/error.log
+log4j.appender.ERR.Threshold = ERROR
+log4j.appender.ERR.DatePattern='.'yyyy-MM-dd
+log4j.appender.ERR.layout=org.apache.log4j.PatternLayout
+log4j.appender.ERR.layout.ConversionPattern=[%d] [%c:%L] %-5p - %m%n
+log4j.appender.ERR.DatePattern='.'yyyy-MM-dd
+log4j.appender.ERR.encoding=UTF-8
+
+##### execution time #############
+log4j.logger.EXECUTETIME=INFO,EXECUTETIME_APPENDER
+log4j.appender.EXECUTETIME_APPENDER=org.apache.log4j.DailyRollingFileAppender
+log4j.appender.EXECUTETIME_APPENDER.File=${system.logPath}/execute/time.log
+log4j.appender.EXECUTETIME_APPENDER.DatePattern='.'yyyy-MM-dd
+log4j.appender.EXECUTETIME_APPENDER.layout=org.apache.log4j.PatternLayout
+log4j.appender.EXECUTETIME_APPENDER.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss,SSS} %m%n
+log4j.appender.EXECUTETIME_APPENDER.encoding=UTF-8

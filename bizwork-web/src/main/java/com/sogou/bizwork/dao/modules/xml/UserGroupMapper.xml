@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sogou.bizwork.dao.modules.UserGroupMapper">
+
+
+<resultMap id="BaseResultMap" type="com.sogou.bizwork.bo.User">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="username" jdbcType="VARCHAR" property="username" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="chinesename" jdbcType="VARCHAR" property="chinesename" />
+    <result column="groupname" jdbcType="VARCHAR" property="group" />
+    <result column="groupid" jdbcType="INTEGER" property="groupid" />
+    <result column="telephone" jdbcType="VARCHAR" property="phone" />
+    <result column="employee_id" jdbcType="INTEGER" property="employeeid" />
+    <result column="job" jdbcType="VARCHAR" property="job" />
+  </resultMap>
+  
+  <resultMap id="UserInfoDtoMap" type="com.sogou.bizwork.bo.user.UserQueryInfo">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="username" jdbcType="VARCHAR" property="userName" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="chinesename" jdbcType="VARCHAR" property="chineseName" />
+    <result column="groupname" jdbcType="VARCHAR" property="groupName" />
+    <result column="leaderName" jdbcType="INTEGER" property="leaderName" />
+    <result column="hc_description" jdbcType="VARCHAR" property="HCDescription" />
+    <result column="employee_id" jdbcType="INTEGER" property="employeeId" />
+    <result column="birthday" jdbcType="VARCHAR" property="birthday" />
+    <result column="telephone" jdbcType="VARCHAR" property="telephone" />
+  </resultMap>
+
+  <select id="selectByGroupId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    SELECT  username,email,chinesename,groupname,groupid,employee_id,job FROM user WHERE groupid = #{groupid,jdbcType=INTEGER}
+  </select>
+  <select id="selectByEmployeeId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    SELECT  username,email,chinesename,groupname,groupid,employee_id,job FROM user WHERE employee_id = #{employeeid,jdbcType=INTEGER}
+  </select>
+  
+  <select id="isLeader" parameterType="java.lang.String" resultType="java.lang.Integer">
+    SELECT  Id FROM grouptable WHERE leaderemail = #{leader,jdbcType=VARCHAR}
+  </select>
+  
+  <select id="getAllUsersAndGroups" resultType="com.sogou.bizwork.user.po.UserAndGroupPo">
+  	SELECT u.employee_id id, u.username name, u.chinesename label, 0 type FROM `user` u
+		UNION ALL
+	SELECT g.Id id, g.groupname name, g.groupname label, 1 type FROM grouptable g
+  </select>
+  
+  <select id="getHCDescription" resultType="com.sogou.bizwork.bo.user.UserStatisticInfo">
+  	select c.hc_description hcDescription ,g.leader leaderName,count(c.employee_id) count
+  	from user c 
+	join grouptable g on c.groupid = g.Id
+	where c.state =1 and c.user_type=1 and c.email !='lijian@sogou-inc.com'
+	group by c.hc_description
+  </select>
+  
+  <select id="getSubGroupIds" parameterType="int" resultType="java.lang.String">
+  	select g.Id from grouptable g where g.groupauth like concat(#{groupAuth},'%')
+  </select>
+  
+  <select id="getGroupIdFromLeaderName" parameterType="java.lang.String" resultType="int">
+  	select g.Id,g.groupname,u.username from grouptable g
+	join user u on g.leaderemail = u.email
+	where u.chinesename like concat('%',#{userName},'%') 
+		or u.username like concat('%',#{userName},'%')
+  </select>
+  
+  <select id="getGroupInfoById" parameterType="int" resultType="com.sogou.bizwork.bo.user.GroupInfo">
+  	select g.Id groupId,g.groupname groupName,g.groupauth groupAuth from grouptable g
+  	where g.id=#{id}
+  </select>
+  
+  <select id="getUserListByQuery" parameterType="com.sogou.bizwork.bo.user.UserQuery" resultMap="UserInfoDtoMap">
+  	select u.id, u.employee_id, u.chinesename, u.username,u.birthday, u.email, u.groupid ,u.telephone,g.groupname ,
+	lu.chinesename leaderName, u.hc_description 
+	from user u
+	left join grouptable g on g.Id = u.groupid
+	left join user lu on lu.employee_id=u.leader_id
+	where u.user_type=1 and u.state !=2 
+	<if test="null != userName and '' != userName">
+		and (u.chinesename like concat('%',#{userName},'%') 
+		or u.username like concat('%',#{userName},'%')) 
+	</if>
+	<if test="null != birthStartDate and '' != birthStartDate">
+		and(u.birthday <![CDATA[>=]]> #{birthStartDate} or u.birthday is null) 
+	</if>
+	<if test="null != birthEndDate and '' != birthEndDate">
+		and (u.birthday <![CDATA[<=]]> #{birthEndDate} or u.birthday is null) 
+	</if>
+	
+	<if test="null != hcDescription and '' != hcDescription">
+		and u.hc_description  like concat('%',#{hcDescription},'%')
+	</if>
+	
+	<if test="null != leaderGroupIdList and leaderGroupIdList.size()>0">
+		and u.groupid in 
+        <foreach collection="leaderGroupIdList" item="item" open="(" separator="," close=")">
+                #{item}
+        </foreach>
+	</if>
+	<if test="null != groupIdList and groupIdList.size()>0">
+		and u.groupid in 
+        <foreach collection="groupIdList" item="item" open="(" separator="," close=")">
+                #{item}
+        </foreach>
+	</if>
+	<choose>
+		
+		<when test="orderBy==1  ">
+			order by u.groupid
+		</when>
+		<when test="orderBy==2  ">
+			order by u.groupid desc
+		</when>
+		<when test="orderBy==3  ">
+			order by u.hc_description 
+		</when>
+		<when test="orderBy==4  ">
+			order by u.hc_description desc
+		</when>
+		<otherwise>
+			order by u.employee_id
+		</otherwise>
+	</choose>
+  </select>  
+</mapper>

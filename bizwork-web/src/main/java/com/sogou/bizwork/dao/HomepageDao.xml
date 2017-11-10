@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sogou.bizwork.dao.HomepageDao">
+
+	<!-- 得到首页小部件列表-->
+	<select id="getWidgets" parameterType="String" 
+	resultType="com.sogou.bizwork.bo.HomepageWidget">
+		SELECT  hw.`id` id , hw.`name` `name`, hw.`url` url , hw.`icon` icon ,hw.width width
+		FROM `user_widgets` uw
+		JOIN `homepage_widgets` hw ON uw.`widget_id` = hw.`id`
+		WHERE user_email = #{userEmail}
+		ORDER BY uw.`order_id`;
+	</select>
+	
+	<select id="getDefaultWidgets" 
+	resultType="com.sogou.bizwork.bo.HomepageWidget">
+		SELECT hw.`id` id
+		FROM `homepage_widgets` hw
+		WHERE hw.`default` = 1
+		ORDER BY hw.`id`;
+	</select>
+	
+	<!-- 得到未订阅小部件列表-->
+	<select id="getNoSubscribeWidgets" parameterType="String" 
+	resultType="com.sogou.bizwork.bo.HomepageWidget">
+		SELECT  hw.`id` id , hw.`name` `name`, hw.`url` url , hw.`icon` icon  ,hw.width width
+		FROM homepage_widgets hw
+		LEFT JOIN user_widgets uw ON hw.id = uw.widget_id AND uw.user_email = #{userEmail}
+		WHERE widget_id IS NULL;
+	</select>
+	
+	
+	<delete id = "deleteUserWidgets" parameterType="String" >
+    DELETE FROM `user_widgets` WHERE `user_email` = #{userEmail};
+    </delete>
+	
+	<insert id="addUserWidgets" parameterType="com.sogou.bizwork.bo.UserWidget" >
+		INSERT INTO `user_widgets`(user_email, widget_id, order_id)
+		VALUES(#{userEmail},#{widgetId}, #{orderId} )
+	</insert>
+	
+</mapper>

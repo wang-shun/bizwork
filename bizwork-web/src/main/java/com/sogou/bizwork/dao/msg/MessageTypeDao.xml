@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sogou.bizwork.dao.msg.MessageTypeDao">
+  
+  <select id="getParentTypeId" parameterType="Integer" resultType="java.lang.Integer" >
+    select parent_mes_type_id from message_type where mes_type_id=#{mesTypeId};
+  </select>
+
+  <resultMap id="MsgTypeRelation" type="com.sogou.bizwork.bo.msg.MessageTypeRelation">
+      <id column="mes_type_id" jdbcType="INTEGER" property="mesTypeId" />
+      <result column="mes_type_name" jdbcType="VARCHAR" property="mesTypeName" />
+      <result column="sub_mes_type_id" jdbcType="INTEGER" property="subMesTypeId" />
+      <result column="sub_mes_type_name" jdbcType="VARCHAR" property="subMesTypeName" />
+  </resultMap>
+  <select id="getMessageTypeRelation" resultMap="MsgTypeRelation" >
+    SELECT mt1.mes_type_name, mt1.mes_type_id,
+            mt2.mes_type_name sub_mes_type_name,
+            mt2.mes_type_id sub_mes_type_id
+        FROM message_type mt1
+        JOIN message_type mt2 ON mt2.parent_mes_type_id = mt1.mes_type_id
+    ORDER BY mes_type_id;
+  </select>
+  
+  <resultMap id="SubscribeMsgType" type="com.sogou.bizwork.bo.msg.SubscribeMessageType">
+      <result column="mes_type_name" jdbcType="VARCHAR" property="mesTypeName" />
+      <result column="mes_type_id" jdbcType="INTEGER" property="mesTypeId" />
+      <result column="if_subscribe" jdbcType="TINYINT" property="ifSubscribe" />
+  </resultMap>
+  <select id="getSubscribeMessageType" resultMap="SubscribeMsgType">
+       SELECT DISTINCT mt1.mes_type_name, mt1.mes_type_id,
+            if(mts.if_subscribe = 1, 1,0) if_subscribe
+        FROM message_type mt1
+        JOIN message_type mt2 ON mt2.parent_mes_type_id = mt1.mes_type_id
+                LEFT JOIN message_type_subscribe mts ON mts.mes_type_id=mt1.mes_type_id
+                    AND mts.employee_id=#{employeeId}
+       ORDER BY mes_type_id;
+  </select>
+  
+  <resultMap id="ComplexMsgType" type="com.sogou.bizwork.bo.msg.ComplexMessageTypeDto">
+    <result column="mes_type_id" jdbcType="INTEGER" property="mesTypeId"/>
+    <result column="mes_type_name" jdbcType="VARCHAR" property="mesTypeName" />
+  </resultMap>
+  <select id="getComplexMessageTypeDtos" resultMap="ComplexMsgType">
+    SELECT mt.mes_type_id,mt.mes_type_name
+        FROM message_type mt
+    WHERE mt.type=1;
+  </select>
+  
+  <update id="setBriefMesTypeToRead" parameterType="map" >
+     UPDATE message_brief SET num = 0 WHERE mes_type_id in (
+        SELECT mt.mes_type_id FROM
+         message_type mt 
+         WHERE mt.parent_mes_type_id=#{mesTypeId}
+    ) AND employee_id=#{employeeId};
+  </update>
+  
+  <update id="setBriefMesToRead" parameterType="map">
+    UPDATE message_brief SET num = 0 
+        WHERE mes_type_id=#{mesTypeId}
+    AND employee_id=#{employeeId};
+  </update>
+  
+  <update id="setComplexMesTypeToRead" parameterType="map" >
+    UPDATE message_receiver SET STATUS=1
+        WHERE mes_id in
+        (SELECT mes_id FROM message_mes WHERE mes_type_id=#{mesTypeId})
+    AND STATUS=0 AND employee_id=#{employeeId};
+  </update>
+  
+  
+  <resultMap id="BaseResultMap" type="com.sogou.bizwork.bo.msg.MessageType">
+    <id column="mes_type_id" jdbcType="BIGINT" property="mesTypeId" />
+    <result column="mes_type_name" jdbcType="VARCHAR" property="mesTypeName" />
+    <result column="parent_mes_type_id" jdbcType="BIGINT" property="employeeId" />
+    <result column="url" jdbcType="VARCHAR" property="url" />
+    <result column="type" jdbcType="TINYINT" property="type" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    mes_type_id, mes_type_name, parent_mes_type_id, url, type
+  </sql>
+  <select id="selectByExample" parameterType="com.sogou.bizwork.bo.msg.MessageTypeExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from message_type
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from message_type
+    where mes_type_id = #{mesTypeId,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from message_type
+    where mes_type_id = #{mesTypeId,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.sogou.bizwork.bo.msg.MessageTypeExample">
+    delete from message_type
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.sogou.bizwork.bo.msg.MessageType">
+    insert into message_type (mes_type_id, mes_type_name, parent_mes_type_id, 
+      url, type)
+    values (#{mesTypeId,jdbcType=BIGINT}, #{mesTypeName,jdbcType=VARCHAR}, #{employeeId,jdbcType=BIGINT}, 
+      #{url,jdbcType=VARCHAR}, #{type,jdbcType=TINYINT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.sogou.bizwork.bo.msg.MessageType">
+    insert into message_type
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="mesTypeId != null">
+        mes_type_id,
+      </if>
+      <if test="mesTypeName != null">
+        mes_type_name,
+      </if>
+      <if test="employeeId != null">
+        parent_mes_type_id,
+      </if>
+      <if test="url != null">
+        url,
+      </if>
+      <if test="type != null">
+        type,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="mesTypeId != null">
+        #{mesTypeId,jdbcType=BIGINT},
+      </if>
+      <if test="mesTypeName != null">
+        #{mesTypeName,jdbcType=VARCHAR},
+      </if>
+      <if test="employeeId != null">
+        #{employeeId,jdbcType=BIGINT},
+      </if>
+      <if test="url != null">
+        #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        #{type,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.sogou.bizwork.bo.msg.MessageTypeExample" resultType="java.lang.Long">
+    select count(*) from message_type
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update message_type
+    <set>
+      <if test="record.mesTypeId != null">
+        mes_type_id = #{record.mesTypeId,jdbcType=BIGINT},
+      </if>
+      <if test="record.mesTypeName != null">
+        mes_type_name = #{record.mesTypeName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.employeeId != null">
+        parent_mes_type_id = #{record.employeeId,jdbcType=BIGINT},
+      </if>
+      <if test="record.url != null">
+        url = #{record.url,jdbcType=VARCHAR},
+      </if>
+      <if test="record.type != null">
+        type = #{record.type,jdbcType=TINYINT},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update message_type
+    set mes_type_id = #{record.mesTypeId,jdbcType=BIGINT},
+      mes_type_name = #{record.mesTypeName,jdbcType=VARCHAR},
+      parent_mes_type_id = #{record.employeeId,jdbcType=BIGINT},
+      url = #{record.url,jdbcType=VARCHAR},
+      type = #{record.type,jdbcType=TINYINT}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.sogou.bizwork.bo.msg.MessageType">
+    update message_type
+    <set>
+      <if test="mesTypeName != null">
+        mes_type_name = #{mesTypeName,jdbcType=VARCHAR},
+      </if>
+      <if test="employeeId != null">
+        parent_mes_type_id = #{employeeId,jdbcType=BIGINT},
+      </if>
+      <if test="url != null">
+        url = #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        type = #{type,jdbcType=TINYINT},
+      </if>
+    </set>
+    where mes_type_id = #{mesTypeId,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.sogou.bizwork.bo.msg.MessageType">
+    update message_type
+    set mes_type_name = #{mesTypeName,jdbcType=VARCHAR},
+      parent_mes_type_id = #{employeeId,jdbcType=BIGINT},
+      url = #{url,jdbcType=VARCHAR},
+      type = #{type,jdbcType=TINYINT}
+    where mes_type_id = #{mesTypeId,jdbcType=BIGINT}
+  </update>
+</mapper>

@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sogou.bizwork.dao.msg.MessageBriefDao">
+
+  <select id="checkBriefMsg" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+    SELECT count(*)
+        FROM message_type mt
+    JOIN message_type pmt ON pmt.mes_type_id=mt.parent_mes_type_id
+    WHERE mt.mes_type_id=#{mesTypeId} AND pmt.parent_mes_type_id=0
+    ;
+  </select>
+  <delete id="deleteAllBriefMessages">
+    delete from message_brief;
+  </delete>
+  <delete id="deleteBriefMessages" parameterType="com.sogou.bizwork.bo.msg.MessageBrief">
+        DELETE FROM message_brief
+            WHERE 
+            <foreach collection="list" item="mtb"  separator="or" >
+                (mes_type_id=#{mtb.mesTypeId} AND employee_id=#{mtb.employeeId})
+            </foreach>
+        ;
+  </delete>
+  <insert id="addBriefMessage" parameterType="com.sogou.bizwork.bo.msg.MessageBrief">
+    INSERT INTO message_brief
+        (mes_type_id, employee_id, num)
+    VALUES 
+    <foreach collection="list" item="mb" separator=",">
+        (#{mb.mesTypeId}, #{mb.employeeId},#{mb.num})
+    </foreach>
+    
+  </insert>
+  <delete id="deleteBriefMessage" parameterType="com.sogou.bizwork.bo.msg.MessageBriefPojo">
+    DELETE FROM message_brief
+    WHERE mes_type_id=#{mesTypeId} AND employee_id in
+    <foreach collection="messageBriefs" item="mbs" open="("
+     separator=","  close=")" >
+        #{mbs.employeeId}
+    </foreach>
+  </delete>
+  
+  <insert id="addBriefMessages" parameterType="com.sogou.bizwork.api.message.BriefTypeMessage">
+    INSERT INTO message_brief
+        (mes_type_id, employee_id, num)
+    VALUES 
+    <foreach collection="list" item="mb" separator=",">
+        (#{mb.mesTypeId}, #{mb.employeeId},#{mb.num})
+    </foreach>
+  </insert>
+  
+
+  <resultMap id="BaseResultMap" type="com.sogou.bizwork.bo.msg.MessageBrief">
+    <id column="employee_id" jdbcType="BIGINT" property="employeeId" />
+    <id column="mes_type_id" jdbcType="BIGINT" property="mesTypeId" />
+    <result column="num" jdbcType="BIGINT" property="num" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    employee_id, mes_type_id, num
+  </sql>
+  <select id="selectByExample" parameterType="com.sogou.bizwork.bo.msg.MessageBriefExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from message_brief
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="com.sogou.bizwork.bo.msg.MessageBriefKey" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from message_brief
+    where employee_id = #{employeeId,jdbcType=BIGINT}
+      and mes_type_id = #{mesTypeId,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="com.sogou.bizwork.bo.msg.MessageBriefKey">
+    delete from message_brief
+    where employee_id = #{employeeId,jdbcType=BIGINT}
+      and mes_type_id = #{mesTypeId,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.sogou.bizwork.bo.msg.MessageBriefExample">
+    delete from message_brief
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.sogou.bizwork.bo.msg.MessageBrief">
+    insert into message_brief (employee_id, mes_type_id, num
+      )
+    values (#{employeeId,jdbcType=BIGINT}, #{mesTypeId,jdbcType=BIGINT}, #{num,jdbcType=BIGINT}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.sogou.bizwork.bo.msg.MessageBrief">
+    insert into message_brief
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="employeeId != null">
+        employee_id,
+      </if>
+      <if test="mesTypeId != null">
+        mes_type_id,
+      </if>
+      <if test="num != null">
+        num,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="employeeId != null">
+        #{employeeId,jdbcType=BIGINT},
+      </if>
+      <if test="mesTypeId != null">
+        #{mesTypeId,jdbcType=BIGINT},
+      </if>
+      <if test="num != null">
+        #{num,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.sogou.bizwork.bo.msg.MessageBriefExample" resultType="java.lang.Long">
+    select count(*) from message_brief
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update message_brief
+    <set>
+      <if test="record.employeeId != null">
+        employee_id = #{record.employeeId,jdbcType=BIGINT},
+      </if>
+      <if test="record.mesTypeId != null">
+        mes_type_id = #{record.mesTypeId,jdbcType=BIGINT},
+      </if>
+      <if test="record.num != null">
+        num = #{record.num,jdbcType=BIGINT},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update message_brief
+    set employee_id = #{record.employeeId,jdbcType=BIGINT},
+      mes_type_id = #{record.mesTypeId,jdbcType=BIGINT},
+      num = #{record.num,jdbcType=BIGINT}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.sogou.bizwork.bo.msg.MessageBrief">
+    update message_brief
+    <set>
+      <if test="num != null">
+        num = #{num,jdbcType=BIGINT},
+      </if>
+    </set>
+    where employee_id = #{employeeId,jdbcType=BIGINT}
+      and mes_type_id = #{mesTypeId,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.sogou.bizwork.bo.msg.MessageBrief">
+    update message_brief
+    set num = #{num,jdbcType=BIGINT}
+    where employee_id = #{employeeId,jdbcType=BIGINT}
+      and mes_type_id = #{mesTypeId,jdbcType=BIGINT}
+  </update>
+</mapper>

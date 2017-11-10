@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+	
+	<bean id="parentUUCDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+	  	<property name="driverClass">
+			<value>${jdbc.mysql.driverClassName}</value>
+		</property>
+		<property name="jdbcUrl">
+			<value>${datasource.uuc.url}</value>
+		</property>
+		<property name="user">
+			<value>${jdbc.uuc.username}</value>
+		</property>
+		<property name="password">
+			<value>${jdbc.uuc.password}</value>
+		</property>
+		<property name="maxPoolSize">
+			<value>${jdbc.uuc.maxPoolSize}</value>
+		</property>
+		<property name="minPoolSize">
+			<value>${jdbc.uuc.minPoolSize}</value>
+		</property>
+		<property name="idleConnectionTestPeriod">
+			<value>${jdbc.uuc.idleConnectionTestPeriod}
+			</value>
+		</property>
+		<property name="maxIdleTime">
+			<value>${jdbc.uuc.maxIdleTime}</value>
+		</property>
+		<property name="description">
+			<value>${jdbc.uuc.description}</value>
+		</property>
+    </bean>
+
+     <!-- 读数据源-->  
+    <bean id="masterUUCDataSource" parent="parentUUCDataSource">  
+    </bean>
+
+    <!-- 写数据源-->  
+    <bean id="slaveUUCDataSource01" parent="parentUUCDataSource" destroy-method="close">  
+		<property name="jdbcUrl">
+			<value>${jdbc.uuc.read.db02.url}</value>
+		</property>
+		<property name="user">
+			<value>${jdbc.uuc.read.db02.username}</value>
+		</property>
+		<property name="password">
+			<value>${jdbc.uuc.read.db02.password}</value>
+		</property>
+    </bean>
+    
+    <bean id="slaveUUCDataSource02" parent="parentUUCDataSource" destroy-method="close">  
+		<property name="jdbcUrl">
+			<value>${jdbc.uuc.read.db03.url}</value>
+		</property>
+		<property name="user">
+			<value>${jdbc.uuc.read.db03.username}</value>
+		</property>
+		<property name="password">
+			<value>${jdbc.uuc.read.db03.password}</value>
+		</property>
+    </bean> 
+
+    <bean id="slaveUUCDataSource03" parent="parentUUCDataSource" destroy-method="close">  
+		<property name="jdbcUrl">
+			<value>${jdbc.uuc.read.db04.url}</value>
+		</property>
+		<property name="user">
+			<value>${jdbc.uuc.read.db04.username}</value>
+		</property>
+		<property name="password">
+			<value>${jdbc.uuc.read.db04.password}</value>
+		</property>
+    </bean>         
+
+    <bean id="uucDataSource" class="com.sogou.bizdev.platform.datasource.MyDataSource">
+	  <property name="targetDataSources">
+	    <!-- 这里必须配置所有数据源 -->
+		<map key-type="java.lang.String">
+          <entry key="rds01" value-ref="slaveUUCDataSource01" />
+          <entry key="rds02" value-ref="slaveUUCDataSource02" />
+          <entry key="rds03" value-ref="slaveUUCDataSource03" />
+          <entry key="wds01" value-ref="masterUUCDataSource" />
+          <entry key="wds02" value-ref="masterUUCDataSource" />
+          <entry key="wds03" value-ref="masterUUCDataSource" />	
+		</map>
+	  </property>
+	  <!-- 找不到数据源时候的默认数据源 -->
+      <property name="defaultTargetDataSource" ref="slaveUUCDataSource01" />		    
+	  <property name="myDataSourceCutover">
+		<ref local="uucDataSourceCutover" />
+	  </property>
+	  <property name="heartBeatDetectSql">
+	    <!--value>select 1</value--><!-- mysql -->
+	    <value>select 1 from dual</value><!-- oracle -->
+	  </property>
+      <!--property name="dcs">
+        <ref bean="dsoCounterServiceRemote" />
+      </property-->
+    </bean>
+    
+    <bean id="uucDataSourceCutover" class="com.sogou.bizdev.platform.datasource.MyDataSourceCutoverImpl">
+		<property name="readDataSource">
+			<map key-type="java.lang.String">
+				<entry key="rds01" value="slaveUUCDataSource01" />
+				<entry key="rds02" value="slaveUUCDataSource02" />
+				<entry key="rds03" value="slaveUUCDataSource03" />
+			</map>
+		</property>
+		<property name="writeDataSource">
+			<map key-type="java.lang.String">
+				<entry key="wds01" value="masterUUCDataSource" />
+				<entry key="wds02" value="masterUUCDataSource" />
+				<entry key="wds03" value="masterUUCDataSource" />
+			</map>
+		</property>
+		<!-- 在读切读写切写的时候是否覆盖当前的数据源而设置一个新的数据源 -->
+		<property name="replaceCurrent" value="false"></property>
+		<!-- 数据源选择策略 -->
+		<property name="rdsselstrategy" ref="rroundRobinStrategy"></property>
+		<property name="wdsselstrategy" ref="wroundRobinStrategy"></property>
+		<!--property name="dcs">
+		    <ref bean="dsoCounterServiceRemote" />
+		</property-->		
+    </bean>
+
+    <!-- 读数据源选择策略 -->
+	<bean id="rroundRobinStrategy" class="com.sogou.bizdev.platform.datasource.strategy.RoundRobinStrategy">
+		<constructor-arg>
+			<map key-type="java.lang.String" value-type="java.lang.Integer">
+				<entry key="rds01" value="1" />
+				<entry key="rds02" value="2" />
+				<entry key="rds03" value="2" />
+			</map>
+		</constructor-arg>
+	</bean>
+
+    <!-- 写数据源选择策略 -->
+	<bean id="wroundRobinStrategy" class="com.sogou.bizdev.platform.datasource.strategy.RoundRobinStrategy">
+		<constructor-arg>
+			<map key-type="java.lang.String" value-type="java.lang.Integer">
+				<entry key="wds01" value="1" />
+				<entry key="wds02" value="1" />
+				<entry key="wds03" value="1" />
+			</map>
+		</constructor-arg>
+	</bean>	
+
+    <!-- 切换数据源拦截器配置 -->  
+    <bean id="myUUCDataSourceInterceptor" class="com.sogou.bizdev.platform.datasource.MyDataSourceInterceptor" >
+        <!-- 需要读数据源的方法名 -->
+    	<property name="readStrategy">
+	      <list>
+	        <value>*</value>
+	      </list>
+    	</property>
+    	<!-- 需要写数据源的方法名 -->
+		<property name="writeStrategy">
+	      <list>
+	        <value>create*</value>
+	        <value>del*</value>
+	        <value>update*</value>
+	        <value>set*</value>
+	        <value>build*</value>
+	      </list>		
+		</property>
+		<!-- 特殊指定数据源的方法名称 -->
+		<property name="specialStrategy">
+			<props>
+				<prop key="CpcPartnerServiceImpl.*">wds01,wds02</prop>
+			</props>
+		</property>
+		<!-- 数据源切换器 -->
+		<property name="dataSourceSwitcher">
+			<ref bean="uucDataSourceCutover" />
+		</property>
+		<property name="toWriteDelay"><value>10</value></property>
+		<property name="isUseToWriteDelay"><value>true</value></property>
+		<!--property name="dcs">
+		    <ref bean="dsoCounterServiceRemote" />
+		</property-->
+    </bean>
+ 
+</beans>

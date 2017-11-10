@@ -1,0 +1,53 @@
+jdbcUrl=jdbc:mysql://bizwork.mysql:3306/bizwork?useUnicode=true&characterEncoding=UTF8&zeroDateTimeBehavior=convertToNull
+username=bizwork
+password=AD132!##
+
+#################uuc_application#################
+jdbc.mysql.driverClassName=com.mysql.jdbc.Driver
+datasource.uuc.url=jdbc:mysql://bizwork.mysql:3306/bizwork?useUnicode=true&characterEncoding=UTF8&zeroDateTimeBehavior=convertToNull&user=bizwork&password=datasource.uuc.url=jdbc:mysql://bizwork.mysql:3306/bizwork?useUnicode=true&characterEncoding=UTF8&zeroDateTimeBehavior=convertToNull&user=bizwork&password=AD132!##
+jdbc.uuc.username=bizwork
+jdbc.uuc.password=AD132!##
+jdbc.uuc.username=bizwork
+jdbc.uuc.password=AD132!##
+jdbc.uuc.maxPoolSize=5
+jdbc.uuc.minPoolSize=2
+jdbc.uuc.initialPoolSize=2
+jdbc.uuc.idleConnectionTestPeriod=300
+jdbc.uuc.maxIdleTime=3600
+jdbc.uuc.description=bizwork db
+
+
+jdbc.uuc.read.db02.url=jdbc:mysql://bizwork.mysql:3306/bizwork?useUnicode=true&characterEncoding=UTF8&zeroDateTimeBehavior=convertToNull&user=bizwork&password=AD132!##
+jdbc.uuc.read.db02.username=bizwork
+jdbc.uuc.read.db02.password=AD132!##
+
+jdbc.uuc.read.db03.url=jdbc:mysql://bizwork.mysql:3306/bizwork?useUnicode=true&characterEncoding=UTF8&zeroDateTimeBehavior=convertToNull&user=bizwork&password=AD132!##
+jdbc.uuc.read.db03.username=bizwork
+jdbc.uuc.read.db03.password=AD132!##
+
+jdbc.uuc.read.db04.url=jdbc:mysql://bizwork.mysql:3306/bizwork?useUnicode=true&characterEncoding=UTF8&zeroDateTimeBehavior=convertToNull&user=bizwork&password=AD132!##
+jdbc.uuc.read.db04.username=bizwork
+jdbc.uuc.read.db04.password=AD132!##
+
+#################user center#################
+jdbc.driverClassName=com.mysql.jdbc.Driver
+jdbc.url=jdbc:mysql://starry.mysql:3306/starry?useUnicode=true&characterEncoding=utf-8&user=starry&password=AD132!##
+jdbc.username=starry
+jdbc.password=AD132!##
+jdbc.maxPoolSize=5
+jdbc.minPoolSize=2
+jdbc.initialPoolSize=2
+jdbc.idleConnectionTestPeriod=300
+jdbc.maxIdleTime=3600
+jdbc.description=starry DB (MySQL)
+
+jdbc.read.db02.url=jdbc:mysql://starry.mysql:3306/starry?useUnicode=true&characterEncoding=utf-8&user=starry&password=AD132!##
+jdbc.read.db02.username=starry
+jdbc.read.db02.password=AD132!##
+jdbc.read.db03.url=jdbc:mysql://starry.mysql:3306/starry?useUnicode=true&characterEncoding=utf-8&user=starry&password=AD132!##
+jdbc.read.db03.username=starry
+jdbc.read.db03.password=AD132!##
+jdbc.read.db04.url=jdbc:mysql://starry.mysql:3306/starry?useUnicode=true&characterEncoding=utf-8&user=starry&password=AD132!##
+jdbc.read.db04.username=starry
+jdbc.read.db04.password=AD132!##
+#################user center#################

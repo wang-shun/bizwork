@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sogou.bizwork.dao.modules.AdviceMapper">
+
+	<insert id="saveAdvice" parameterType="com.sogou.bizwork.bo.modules.AdvicePo" useGeneratedKeys="true" keyProperty="id">
+	    insert into user_advice (comment,picUrl,cDate,chineseName) values(#{comment},#{picUrl},#{time},#{chineseName})
+	</insert>  
+	
+	<select id="getAdviceByName" resultType="com.sogou.bizwork.bo.modules.AdvicePo">
+		select  u.comment,u.picUrl,u.cDate time,u.chineseName from user_advice u where chineseName = #{chineseName,jdbcType=VARCHAR} order by id desc limit 0,2
+  	</select>
+  	
+</mapper>

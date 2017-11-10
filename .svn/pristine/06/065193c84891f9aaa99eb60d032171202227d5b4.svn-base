@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sogou.bizwork.dao.SystemServiceDao">
+	
+	<!-- 获取系统服务-->
+	<select id="getSystemServices" 
+	resultType="com.sogou.bizwork.bo.SystemItem">
+		SELECT si.id, si.name, si.category_id categoryId,si.icon,si.url,si.order_id orderId, si.is_new isNew, sc.name categoryName,2 type
+		FROM system_items si
+		JOIN system_category sc ON si.category_id = sc.id
+		WHERE si.visible = 1 AND si.`id` NOT IN
+			(SELECT	sui.`system_items_id` 
+			FROM system_user_items sui
+			WHERE sui.`user_email`=#{userEmail} AND sui.`type`=2
+			)
+		ORDER BY si.order_id;
+	</select>
+	
+	<!-- 获取系统服务分类-->
+	<select id="getSystemCategory" 
+	resultType="com.sogou.bizwork.bo.SystemCategory">
+		SELECT id categoryId,name categoryName
+		FROM system_category
+	</select>
+	
+	<!-- 获取用户自定义服务-->
+	<select id="getUserServices" parameterType="String"
+	resultType="com.sogou.bizwork.bo.SystemItem">
+		SELECT sui.id, sui.name, sui.category_id categoryId,sui.icon,sui.url, sui.is_new isNew, sc.name categoryName,1 type
+		FROM system_user_items sui
+		join system_category sc on sui.category_id = sc.id
+		WHERE sui.`user_email` = #{userEmail} and sui.status = 1 and type=1
+		ORDER BY sui.id;
+	</select>
+	
+	<!-- 新增用户自定义服务-->
+	<insert id="addUserServices" parameterType="com.sogou.bizwork.bo.SystemItem">
+		insert system_user_items (`user_email`,`type`,`name`,`category_id`, `icon`, `url`, `status`,`is_new`) 
+	    values (#{userEmail},1, #{name}, #{categoryId}, #{icon}, #{url}, 1, #{isNew})
+	</insert>
+	
+	<!-- 删除用户自定义服务-->
+	<update id="deleteUserServices" parameterType="com.sogou.bizwork.bo.SystemItem">
+		update system_user_items set status = 0
+        where id = #{id} and status != 0   
+	</update>
+	<!-- 删除系统默认服务-->
+	<insert id="deleteSystemServices" parameterType="com.sogou.bizwork.bo.SystemItem">
+		insert system_user_items (`user_email`,`type`,`system_items_id`,`status`,`is_new`) 
+	    values (#{userEmail},2, #{id}, 1,#{isNew})
+	</insert>
+	
+</mapper>
